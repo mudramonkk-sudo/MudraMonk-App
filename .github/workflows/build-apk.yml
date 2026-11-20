@@ -1,0 +1,54 @@
+# Builds an installable Android APK on every push (or by hand from the Actions tab).
+# Download it from: Actions → latest "Build APK" run → Artifacts → MudraMonk-apk
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install app packages
+        run: npm ci
+
+      - name: Make icons from the website logo
+        run: |
+          pip install pillow
+          python scripts/make_icons.py
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Generate Android project
+        run: npx expo prebuild --platform android --no-install --clean
+
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk MudraMonk-v${{ github.run_number }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MudraMonk-apk
+          path: MudraMonk-v*.apk
+          retention-days: 30
