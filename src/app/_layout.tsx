@@ -11,7 +11,7 @@ export default function RootLayout() {
         <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg } }}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="menu" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="menu" options={{ presentation: 'transparentModal', animation: 'none', contentStyle: { backgroundColor: 'transparent' } }} />
           <Stack.Screen name="profile" options={{ presentation: 'modal' }} />
         </Stack>
       </AppProvider>

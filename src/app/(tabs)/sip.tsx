@@ -7,7 +7,11 @@ import { C, fmt } from '@/lib/theme';
 type Mode = 'sip' | 'lump';
 
 function Stepper({ label, value, onChange, step, min, max, suffix }: { label: string; value: number; onChange: (n: number) => void; step: number; min: number; max: number; suffix?: string }) {
-  const set = (n: number) => onChange(Math.min(max, Math.max(min, n)));
+  // Keep what the user is typing as text, so "2" → "20" → "200" works; limits apply when they finish.
+  const [text, setText] = useState(String(value));
+  const [editing, setEditing] = useState(false);
+  const clamp = (n: number) => Math.min(max, Math.max(min, n));
+  const set = (n: number) => { const v = clamp(Math.round(n * 100) / 100); onChange(v); setText(String(v)); };
   return (
     <View>
       <Text style={s.label}>{label}</Text>
@@ -15,9 +19,19 @@ function Stepper({ label, value, onChange, step, min, max, suffix }: { label: st
         <Pressable onPress={() => set(value - step)} style={btn}><Text style={btnT}>−</Text></Pressable>
         <TextInput
           style={[s.input, { flex: 1, textAlign: 'center', fontWeight: '700' }]}
-          keyboardType="numeric"
-          value={String(value)}
-          onChangeText={(t) => set(Number(t.replace(/[^\d.]/g, '')) || 0)}
+          keyboardType="decimal-pad"
+          value={editing ? text : String(value)}
+          onFocus={() => { setEditing(true); setText(String(value)); }}
+          onChangeText={(t) => {
+            const clean = t.replace(/[^\d.]/g, '');
+            setText(clean);
+            const n = Number(clean);
+            if (clean && !isNaN(n) && n > 0) onChange(Math.min(max, n)); // live update while typing
+          }}
+          onEndEditing={() => { setEditing(false); set(Number(text) || min); }}
+          onBlur={() => { setEditing(false); set(Number(text) || min); }}
+          selectTextOnFocus
+          returnKeyType="done"
         />
         {suffix ? <Text style={{ color: C.muted, width: 44 }}>{suffix}</Text> : null}
         <Pressable onPress={() => set(value + step)} style={btn}><Text style={btnT}>+</Text></Pressable>
@@ -58,7 +72,7 @@ export default function Sip() {
         <Card>
           {mode === 'sip'
             ? <Stepper label="Monthly investment (₹)" value={amt} onChange={setAmt} step={500} min={100} max={10000000} />
-            : <Stepper label="One-time investment (₹)" value={lump} onChange={setLump} step={10000} min={500} max={1000000000} />}
+            : <Stepper label="One-time investment (₹)" value={lump} onChange={setLump} step={10000} min={100} max={1000000000} />}
           <Stepper label="Expected return (per year)" value={rate} onChange={setRate} step={0.5} min={1} max={30} suffix="%" />
           <Stepper label="Time period" value={years} onChange={setYears} step={1} min={1} max={40} suffix="years" />
         </Card>

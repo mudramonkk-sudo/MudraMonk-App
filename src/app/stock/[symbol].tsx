@@ -17,7 +17,9 @@ export default function StockScreen() {
   const { isWatched, toggleWatch } = useApp();
   const [tab, setTab] = useState<Tab>('chart');
   const st = data?.stocks.find((x) => x.symbol === sym);
-  const tv = `NSE:${sym}`;
+  // TradingView shows NSE only on its own site (embeds give an "only available on TradingView" popup),
+  // so charts and financials use the same company's BSE listing.
+  const tv = `BSE:${sym}`;
   const watched = isWatched(sym);
 
   return (
@@ -82,7 +84,7 @@ export default function StockScreen() {
           ) : null}
           <Card style={{ marginTop: 10, backgroundColor: C.warnBg, borderColor: '#F5DFB3' }}>
             <Text style={{ fontSize: 12, color: C.warnText, lineHeight: 18 }}>
-              Charts, technical summary and financials are provided by TradingView. Technical readings are for learning only — not a buy or sell signal.
+              Charts, technical summary and financials are provided by TradingView (BSE listing of the same company, delayed). Technical readings are for learning only — not a buy or sell signal.
             </Text>
           </Card>
         </Section>
