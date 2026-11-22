@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PRICES_URL, STOCKS_URL } from './config';
+import { HISTORY_URL, PRICES_URL, STOCKS_URL } from './config';
 
 export type Index = { n: string; p: number; ch: number; pct: number };
 /** [name, symbol, price, pctChange, volumeText] */
@@ -61,3 +61,8 @@ export function searchStocks(list: Stock[], q: string, limit = 40) {
   }
   return [...starts, ...has].slice(0, limit);
 }
+
+/** Index chart data: d1 = [["09:15", close], …] for the latest trading day; daily = [["2026-11-20", close], …] */
+export type IndexHistory = { d1?: [string, number][]; d1_date?: string; daily?: [string, number][] };
+export type History = { updated: string; indices: Record<string, IndexHistory> };
+export const getHistory = (force = false) => getJson<History>(HISTORY_URL, force);

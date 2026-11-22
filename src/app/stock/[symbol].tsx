@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { AppHeader, Card, Chips, Disclaimer, Loading, s, Section, Tag } from '@/components/ui';
+import { AppHeader, Card, Chips, Disclaimer, Loading, s, Section } from '@/components/ui';
 import { TVWidget } from '@/components/Web';
 import { getStocks } from '@/lib/market';
 import { useApp } from '@/lib/store';
@@ -36,7 +36,7 @@ export default function StockScreen() {
                   <>
                     <Text style={{ fontSize: 28, fontWeight: '800', color: C.navy, marginTop: 6 }}>₹{fmt(st.price)}</Text>
                     <Text style={{ color: upDown(st.change), fontWeight: '600' }}>{st.change >= 0 ? '+' : ''}{fmt(st.change)} ({pct(st.pct)}) today</Text>
-                    <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', marginTop: 6 }}><Tag text="DELAYED" /><Text style={s.note}>{data?.updated}</Text></View>
+                    <Text style={[s.note, { marginTop: 6, fontSize: 11 }]}>Data delayed · {data?.updated}</Text>
                   </>
                 ) : <Text style={[s.note, { marginTop: 6 }]}>Price not in today’s list — chart below still works.</Text>}
               </View>

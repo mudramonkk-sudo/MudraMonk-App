@@ -9,6 +9,7 @@ export const APP_API = `${SITE}/wp-json/mudramonk-app/v1`; // from the mudramonk
 const DATA = 'https://raw.githubusercontent.com/mudramonkk-sudo/MudraMonk-Data/main';
 export const PRICES_URL = `${DATA}/prices.json`;
 export const STOCKS_URL = `${DATA}/stocks.json`;
+export const HISTORY_URL = `${DATA}/history.json`; // index chart data (1D + daily closes)
 
 // WordPress category IDs on mudramonk.com
 export const CATEGORIES = [

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { FlatList, RefreshControl, Text, TextInput, View } from 'react-native';
-import { Chips, ErrorBox, Loading, s, StockRow, Tag } from '@/components/ui';
+import { Chips, ErrorBox, Loading, s, StockRow } from '@/components/ui';
 import { getStocks, searchStocks, Stock } from '@/lib/market';
 import { C } from '@/lib/theme';
 import { useAsync } from '@/lib/useAsync';
@@ -41,8 +41,7 @@ export default function Stocks() {
         ) : null}
         {data ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6, marginTop: q ? 10 : 0 }}>
-            <Tag text="DELAYED" />
-            <Text style={s.note}>Updated {data.updated}</Text>
+            <Text style={[s.note, { fontSize: 11 }]}>Updated {data.updated}</Text>
           </View>
         ) : null}
       </View>

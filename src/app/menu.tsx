@@ -3,7 +3,9 @@ import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Dimensions, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Logo, s } from '@/components/ui';
+import Svg, { Circle, Path } from 'react-native-svg';
+import { s } from '@/components/ui';
+import { useApp } from '@/lib/store';
 import { CAT, PAGES, SOCIAL } from '@/lib/config';
 import { C } from '@/lib/theme';
 
@@ -27,20 +29,21 @@ const MORE: [string, Href][] = [
   ['Privacy Policy', `/page/${PAGES.privacy}`],
 ];
 
-// Side drawer like the website: white panel from the left, rest of the screen dimmed.
-const WIDTH = Math.min(300, Math.round(Dimensions.get('window').width * 0.78));
+// Side drawer: narrow white panel from the right, full height; rest of the page stays visible.
+const WIDTH = Math.min(200, Math.round(Dimensions.get('window').width * 0.55));
 
 export default function Menu() {
   const insets = useSafeAreaInsets();
-  const x = useRef(new Animated.Value(-WIDTH)).current;
-  const fade = x.interpolate({ inputRange: [-WIDTH, 0], outputRange: [0, 1] });
+  const { user } = useApp();
+  const x = useRef(new Animated.Value(WIDTH)).current;
+  const fade = x.interpolate({ inputRange: [0, WIDTH], outputRange: [1, 0] });
 
   useEffect(() => {
     Animated.timing(x, { toValue: 0, duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
   }, [x]);
 
   const close = (then?: () => void) =>
-    Animated.timing(x, { toValue: -WIDTH, duration: 180, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => {
+    Animated.timing(x, { toValue: WIDTH, duration: 180, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => {
       router.back();
       if (then) setTimeout(then, 30);
     });
@@ -53,18 +56,18 @@ export default function Menu() {
 
   return (
     <View style={StyleSheet.absoluteFill}>
-      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(11,31,68,0.35)', opacity: fade }]}>
+      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(19,37,74,0.12)', opacity: fade }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={() => close()} accessibilityLabel="Close menu" />
       </Animated.View>
 
       <Animated.View style={[st.panel, { width: WIDTH, transform: [{ translateX: x }] }]}>
-        <ScrollView contentContainerStyle={{ padding: 14, paddingTop: insets.top + 14, paddingBottom: insets.bottom + 20 }}>
+        <ScrollView contentContainerStyle={{ padding: 8, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 20 }}>
           <View style={st.top}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Logo />
-              <Text style={{ fontSize: 17, fontWeight: '800', color: C.navy }}>Mudra Monk</Text>
-            </View>
-            <Pressable onPress={() => close()} hitSlop={10}><Text style={{ fontSize: 20, color: C.muted }}>✕</Text></Pressable>
+            <Pressable onPress={() => close(() => router.push('/profile'))} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, flex: 1 }}>
+              <View style={st.userIc}><Svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth={2} strokeLinecap="round"><Circle cx={12} cy={8} r={4} /><Path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></Svg></View>
+              <Text style={{ fontSize: 12.5, fontWeight: '600', color: C.blue }} numberOfLines={1}>{user ? user.name : 'Log in / Join'}</Text>
+            </Pressable>
+            <Pressable onPress={() => close()} hitSlop={10}><Text style={{ fontSize: 15, color: C.muted }}>✕</Text></Pressable>
           </View>
           {ITEMS.map(([l, h]) => <Item key={l} label={l} href={h} />)}
           <View style={{ height: 1, backgroundColor: C.line, marginVertical: 8 }} />
@@ -72,11 +75,11 @@ export default function Menu() {
           <View style={{ flexDirection: 'row', gap: 6, marginTop: 14 }}>
             {[['YouTube', SOCIAL.youtube], ['Instagram', SOCIAL.instagram], ['X', SOCIAL.x]].map(([n, u]) => (
               <Pressable key={n} onPress={() => WebBrowser.openBrowserAsync(u)} style={st.social}>
-                <Text style={{ color: C.blue, fontWeight: '700', fontSize: 12 }}>{n}</Text>
+                <Text style={{ color: C.blue, fontWeight: '500', fontSize: 10 }}>{n}</Text>
               </Pressable>
             ))}
           </View>
-          <Text style={[s.note, { marginTop: 12 }]}>Contact: {SOCIAL.email}</Text>
+          <Text style={[s.note, { marginTop: 10, fontSize: 10.5 }]}>{SOCIAL.email}</Text>
         </ScrollView>
       </Animated.View>
     </View>
@@ -84,9 +87,10 @@ export default function Menu() {
 }
 
 const st = StyleSheet.create({
-  panel: { position: 'absolute', top: 0, bottom: 0, left: 0, backgroundColor: '#fff', borderTopRightRadius: 18, borderBottomRightRadius: 18, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16, elevation: 12 },
-  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, paddingHorizontal: 4 },
-  item: { paddingVertical: 11, paddingHorizontal: 10, borderRadius: 10 },
-  itemText: { fontSize: 14.5, color: C.navy, fontWeight: '500' },
-  social: { flex: 1, backgroundColor: C.sky, paddingVertical: 9, borderRadius: 10, alignItems: 'center' },
+  panel: { position: 'absolute', top: 0, bottom: 0, right: 0, backgroundColor: '#fff', borderTopLeftRadius: 16, borderBottomLeftRadius: 16, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16, elevation: 12 },
+  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, paddingBottom: 8, marginBottom: 4, borderBottomWidth: 1, borderBottomColor: C.line },
+  userIc: { width: 28, height: 28, borderRadius: 14, backgroundColor: C.sky, alignItems: 'center', justifyContent: 'center' },
+  item: { paddingVertical: 8, paddingHorizontal: 8, borderRadius: 8 },
+  itemText: { fontSize: 13, color: C.navy },
+  social: { flex: 1, backgroundColor: C.sky, paddingVertical: 6, borderRadius: 6, alignItems: 'center' },
 });
